@@ -1,0 +1,139 @@
+.card {
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(108,92,231,0.07);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon { font-size: 22px; }
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.sub { font-size: 12px; font-weight: 600; }
+.subOpen { color: var(--green); }
+.subClosed { color: var(--text-muted); }
+
+.statusBadge {
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.open { background: rgba(38,222,129,0.1); }
+.closed { background: rgba(108,92,231,0.08); }
+
+/* ── Animación visual de la puerta ── */
+.doorVisual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 4px 0 16px;
+}
+
+.doorFrame {
+  width: 80px;
+  height: 80px;
+  border: 3px solid #c8c3f8;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  overflow: hidden;
+  background: #f0eeff;
+}
+
+.door {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, #9b8bf4, #7c6de0);
+  transform-origin: left center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+}
+
+.door.doorOpen {
+  transform: perspective(200px) rotateY(-80deg);
+}
+
+.doorHandle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  align-self: flex-end;
+  margin-top: auto;
+  margin-bottom: 4px;
+}
+
+.doorPanel {
+  flex: 1;
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+}
+
+.doorGround {
+  width: 90px;
+  height: 5px;
+  background: linear-gradient(90deg, transparent, #c8c3f8, transparent);
+  border-radius: 0 0 4px 4px;
+}
+
+/* ── Botón principal ── */
+.mainBtn {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-xs);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all var(--transition);
+}
+
+.mainBtnOpen {
+  background: var(--primary);
+  color: var(--white);
+  box-shadow: 0 4px 14px rgba(108,92,231,0.35);
+}
+
+.mainBtnOpen:hover { background: var(--primary-dark); }
+
+.mainBtnClose {
+  background: #fff3f3;
+  color: #e74c3c;
+  border: 1.5px solid #fecaca;
+}
+
+.mainBtnClose:hover { background: #fee2e2; }
+
+.mainBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.loading { font-size: 13px; }
