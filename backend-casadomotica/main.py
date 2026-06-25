@@ -1,10 +1,56 @@
+"""Backend Casa Domotica - FastAPI + MQTT.
+
+Arranca una unica instancia del cliente MQTT persistente (via lifespan) que:
+  - escucha telemetria de los ESP32 y la guarda en memoria (state)
+  - publica comandos a los actuadores cuando el frontend llama a /api/...
+
+La estructura modular es:
+  app/config.py     -> catalogo de habitaciones/dispositivos + broker
+  app/state.py      -> estado en memoria
+  app/schemas.py    -> modelos Pydantic
+  app/mqtt_client.py-> cliente MQTT persistente
+  app/routers/*     -> endpoints HTTP
+"""
+
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import paho.mqtt.client as mqtt
 
-app = FastAPI(title="Backend Casa Domótica")
+from app import mqtt_client
+from app.routers import rooms, devices, telemetry, health
 
-# Permitir que React se conecte en el futuro sin bloqueos de seguridad
+# Configuracion de logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("backend-casadomotica")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Arranca/detiene el cliente MQTT junto con el servidor."""
+    logger.info("Arrancando backend Casa Domotica...")
+    if mqtt_client.start_mqtt():
+        logger.info("Cliente MQTT iniciado")
+    else:
+        logger.warning("Cliente MQTT no pudo iniciarse. Los endpoints seguiran funcionando sin publicar.")
+    yield
+    logger.info("Deteniendo backend...")
+    mqtt_client.stop_mqtt()
+    logger.info("Backend detenido")
+
+
+app = FastAPI(
+    title="Backend Casa Domotica",
+    description="API para controlar dispositivos del hogar via MQTT",
+    version="2.0.0",
+    lifespan=lifespan,
+)
+
+# CORS: permitir al frontend (React/Vite) conectarse
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,34 +59,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configuración del Broker MQTT que tienes en tu laptop
-MQTT_BROKER = "127.0.0.1"  # Tu IP local o localhost
-MQTT_PORT = 1883
-MQTT_TOPIC_LED = "casa/sala/led"  # El canal exclusivo para el LED
+# Incluir routers
+app.include_router(rooms.router)
+app.include_router(devices.router)
+app.include_router(telemetry.router)
+app.include_router(health.router)
 
-def enviar_mensaje_mqtt(mensaje: str):
-    """Se conecta al broker local, publica el texto y se desconecta"""
-    # CORRECCIÓN AQUÍ: Se añade el parámetro de la versión de API para evitar errores en paho-mqtt v2+
-    cliente = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
-    
-    cliente.connect(MQTT_BROKER, MQTT_PORT, 60)
-    cliente.publish(MQTT_TOPIC_LED, mensaje)
-    cliente.disconnect()
 
-@app.get("/")
+@app.get("/", tags=["root"], summary="Health-check raiz")
 def inicio():
     return {"status": "online", "proyecto": "backend-casadomotica"}
-
-@app.post("/api/led")
-async def controlar_led(accion: str):
-    """
-    Endpoint para encender o apagar.
-    Recibe 'ON' u 'OFF' como parámetro de texto.
-    """
-    comando = accion.upper() # Lo convierte a mayúsculas para evitar errores
-    
-    if comando in ["ON", "OFF"]:
-        enviar_mensaje_mqtt(comando) # Envía el String "ON" u "OFF" al broker
-        return {"status": "success", "enviado": comando}
-    
-    return {"status": "error", "mensaje": "Comando inválido. Usa ON u OFF."}
