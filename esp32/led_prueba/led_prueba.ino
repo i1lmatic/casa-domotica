@@ -1,3 +1,6 @@
+//#include <dummy.h>
+//#include <dummy.h>
+
 #include <WiFi.h>
 #include <PubSubClient.h>
 
@@ -6,7 +9,7 @@ const char* ssid = "UNAMAD WIFI";
 const char* password = "12345678";
 
 // 2. IP de tu laptop (donde corre Mosquitto y FastAPI)
-const char* mqtt_server = "40.0.2.141";
+const char* mqtt_server = "192.168.18.24";
 
 // El canal que definimos en el main.py de FastAPI
 const char* topic_led = "casa/sala/luz"; 

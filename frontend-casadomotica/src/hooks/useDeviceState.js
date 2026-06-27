@@ -63,7 +63,7 @@ export function useDeviceState() {
     setQuickDevices(prev => prev.map(d => d.id === id ? { ...d, active: !d.active } : d))
   }, [])
 
-  const toggleIluminacion = useCallback(async (roomId) => {
+  /*const toggleIluminacion = useCallback(async (roomId) => {
     setRoomDevices(prev => ({
       ...prev,
       [roomId]: {
@@ -79,7 +79,39 @@ export function useDeviceState() {
         // backend offline — UI persiste igual
       }
     }
+  }, [roomDevices])*/
+
+    const toggleIluminacion = useCallback(async (roomId) => {
+    setRoomDevices(prev => ({
+      ...prev,
+      [roomId]: {
+        ...prev[roomId],
+        iluminacion: { ...prev[roomId].iluminacion, active: !prev[roomId].iluminacion.active },
+      },
+    }))
+    const isNowOn = !roomDevices[roomId]?.iluminacion?.active
+    if (roomId === 'sala') {
+      try {
+        // Endpoint correcto del backend
+        await fetch(`${API_BASE}/api/rooms/sala/devices/luz`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: isNowOn ? 'ON' : 'OFF'
+          })
+        })
+      } catch {
+        // backend offline — UI persiste igual
+      }
+    }
   }, [roomDevices])
+
+
+  
+
+   
 
   const setBrillo = useCallback((roomId, brillo) => {
     setRoomDevices(prev => ({

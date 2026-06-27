@@ -1,7 +1,7 @@
 """Configuracion central del backend: broker MQTT y catalogo de habitaciones/dispositivos."""
 
 # Broker Mosquitto (corre en la misma laptop que el backend)
-MQTT_BROKER = "127.0.0.1"
+MQTT_BROKER = "192.168.18.24"
 MQTT_PORT = 1883
 
 # Prefijo para todos los topics de la casa
